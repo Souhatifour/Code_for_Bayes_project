@@ -1,4 +1,3 @@
-# Code_for_Bayes_project
 ---
 title: "bayes_reoprt_code_py"
 output: html_document
@@ -98,14 +97,14 @@ data_new2[factor_cols] <- lapply(data_new2[factor_cols], as.factor)
 ```
 ## Create predictor variables at start and change:
 ```{r}
-enrollement <- data_raw %>%
+enrollment <- data_raw %>%
   dplyr::filter(!is.na(total_enrollment)) %>%
   group_by(unitid) %>%
-  dplyr::summarize(enrollement_start = mean(total_enrollment[(year >= min(year)) & (year <= min(year) + 4)]),
-             enrollement_end = mean(total_enrollment[(year >= max(year) - 4) & (year <= max(year))])) %>%
-  mutate(change_in_enrollement = enrollement_end - enrollement_start)
+  dplyr::summarize(enrollment_start = mean(total_enrollment[(year >= min(year)) & (year <= min(year) + 4)]),
+             enrollment_end = mean(total_enrollment[(year >= max(year) - 4) & (year <= max(year))])) %>%
+  mutate(change_in_enrollment = enrollment_end - enrollment_start)
 
-enrollement<- enrollement %>% dplyr::select(unitid,enrollement_start,change_in_enrollement)
+enrollment<- enrollment %>% dplyr::select(unitid,enrollment_start,change_in_enrollment)
 ```
 
 ```{r}
@@ -132,7 +131,7 @@ mkt_hispa <-mkt_hispa %>% dplyr::select(unitid, mkt_hispa_start,change_mkt_hispa
 data_2009 <- data_new2[data_new$year == 2009,] %>% dplyr::select(contains(c("selec", "private","forprofit","unitid","region")))
 
 
-merged_data <- merge(changein_representation,enrollement,  by = "unitid")
+merged_data <- merge(changein_representation,enrollment,  by = "unitid")
 merged_data <- merge(merged_data,dif_hispa, by = "unitid")
 merged_data <- merge(merged_data,mkt_hispa, by = "unitid")
 merged_data <- merge(merged_data, data_2009, by = "unitid")
@@ -232,7 +231,7 @@ ztable(cor) %>%makeHeatmap()%>%ztable2flextable()
 library(rstan)
 
 # Fit the model that includes all variables using stan_glm with gamma distribution and default prior 
-model1 <- stan_glm(abs(change_in_representation+ 0.0001)~ start_representation + enrollement_start + change_in_enrollement + dif_hispa_start + change_dif_hispa + mkt_hispa_start + change_mkt_hispa + selectivity + private + forprofit+region+change_dif_hispa*region,
+model1 <- stan_glm(abs(change_in_representation+ 0.0001)~ start_representation + enrollment_start + change_in_enrollment + dif_hispa_start + change_dif_hispa + mkt_hispa_start + change_mkt_hispa + selectivity + private + forprofit+region+change_dif_hispa*region,
                   data = selected_data,
                   family = Gamma(link = "log"),
                   chains = 4,
@@ -254,7 +253,7 @@ vif_values <- vif(model1)
 
 # Model 2: exclude some of the variables with high VIF
 # Fit the model using stan_glm with gamma distribution and default priors 
-model2 <- stan_glm(abs(change_in_representation+ 0.0001)~ start_representation + enrollement_start + change_in_enrollement + selectivity + private + forprofit+region+change_dif_hispa*region,
+model2 <- stan_glm(abs(change_in_representation+ 0.0001)~ start_representation + enrollment_start + change_in_enrollment + selectivity + private + forprofit+region+change_dif_hispa*region,
                   data = selected_data,
                   family = Gamma(link = "log"),
                   chains = 4,
@@ -275,7 +274,7 @@ vif_values <- vif(model2)
 
 # Model 3:
 # Fit the model using stan_glm with gamma distribution and default priors 
-model3 <- stan_glm(abs(change_in_representation+ 0.0001)~ enrollement_start + change_in_enrollement + selectivity + private + forprofit+region+change_dif_hispa*region,
+model3 <- stan_glm(abs(change_in_representation+ 0.0001)~ enrollment_start + change_in_enrollment + selectivity + private + forprofit+region+change_dif_hispa*region,
                   data = selected_data,
                   family = Gamma(link = "log"),
                   chains = 4,
@@ -338,6 +337,51 @@ pp_check(model3, plotfun = "intervals")
 ```
 
 
+# effect plots:
+
+
+```{r}
+# For "enrollment_start"
+ggpredict(model3, terms = "enrollement_start")
+
+# For "change_in_enrollment"
+ggpredict(model3, terms = "change_in_enrollement")
+
+# For "selectivity2"
+ggpredict(model3, terms = "selectivity2")
+
+# For "selectivity3"
+ggpredict(model3, terms = "selectivity3")
+
+# For "private1"
+ggpredict(model3, terms = "private1")
+
+# For "forprofit1"
+ggpredict(model3, terms = "forprofit1")
+
+# For "regionNortheast"
+ggpredict(model3, terms = "regionNortheast")
+
+# For "regionSouth"
+ggpredict(model3, terms = "regionSouth")
+
+# For "regionWest"
+ggpredict(model3, terms = "regionWest")
+
+# For "change_dif_hispa"
+ggpredict(model3, terms = "change_dif_hispa")
+
+# For "regionNortheast:change_dif_hispa"
+ggpredict(model3, terms = "regionNortheast:change_dif_hispa")
+
+# For "regionSouth:change_dif_hispa"
+ggpredict(model3, terms = "regionSouth:change_dif_hispa")
+
+# For "regionWest:change_dif_hispa"
+ggpredict(model3, terms = "regionWest:change_dif_hispa")
+
+
+```
 
 
 
@@ -357,10 +401,85 @@ pp_check(model3, plotfun = "intervals")
 
 
 
+```{r}
+# Set up the plotting area with multiple panels
+par(mfrow = c(4, 4))
+
+# Plot for enrollment_start
+plot(x = data$enrollement_start, y = predict(model3), xlab = "Enrollment Start", ylab = "Change in Representation", main = "enrollement_start")
+
+# Plot for change_in_enrollment
+plot(x = data$change_in_enrollement, y = predict(model3), xlab = "Change in Enrollment", ylab = "Change in Representation", main = "change_in_enrollement")
+
+# Plot for selectivity2
+plot(x = data$selectivity2, y = predict(model3), xlab = "Selectivity (medium)", ylab = "Change in Representation", main = "selectivity2")
+
+# Plot for selectivity3
+plot(x = data$selectivity3, y = predict(model3), xlab = "Selectivity (high)", ylab = "Change in Representation", main = "selectivity3")
+
+# Plot for private1
+plot(x = data$private1, y = predict(model3), xlab = "Private Institution", ylab = "Change in Representation", main = "private1")
+
+# Plot for forprofit1
+plot(x = data$forprofit1, y = predict(model3), xlab = "For-profit Institution", ylab = "Change in Representation", main = "forprofit1")
+
+# Plot for regionNortheast
+plot(x = data$regionNortheast, y = predict(model3), xlab = "Region Northeast", ylab = "Change in Representation", main = "regionNortheast")
+
+# Plot for regionSouth
+plot(x = data$regionSouth, y = predict(model3), xlab = "Region South", ylab = "Change in Representation", main = "regionSouth")
+
+# Plot for regionWest
+plot(x = data$regionWest, y = predict(model3), xlab = "Region West", ylab = "Change in Representation", main = "regionWest")
+
+# Plot for change_dif_hispa
+plot(x = data$change_dif_hispa, y = predict(model3), xlab = "Change in Disparity - Hispanic", ylab = "Change in Representation", main = "change_dif_hispa")
+
+# Plot for regionNortheast:change_dif_hispa
+plot(x = data$regionNortheast * data$change_dif_hispa, y = predict(model3), xlab = "Region Northeast x Change in Disparity", ylab = "Change in Representation", main = "regionNortheast:change_dif_hispa")
+
+# Plot for regionSouth:change_dif_hispa
+plot(x = data$regionSouth * data$change_dif_hispa, y = predict(model3), xlab = "Region South x Change in Disparity", ylab = "Change in Representation", main = "regionSouth:change_dif_hispa")
+
+# Plot for regionWest:change_dif_hispa
+plot(x = data$regionWest * data$change_dif_hispa, y = predict(model3), xlab = "Region West x Change in Disparity", ylab = "Change in Representation", main = "regionWest:change_dif_hispa")
+
+```
+```{r}
+ # Assuming you have the fitted model stored as 'model3'
+effect_plot <- ggpredict(model3, terms = "enrollement_start")
+ # Plot the effect
+ plot(effect_plot)
+```
 
 
 
 
 
+```{r}
+library(ggplot2)
+
+# Assuming you have the fitted model stored as 'model3'
+# Create effect plots for each variable
+effect_enrollment_start <- ggpredict(model3, terms = "enrollment_start")
+
+effect_change_in_enrollment <- ggpredict(model3, terms = "change_in_enrollment")
+
+effect_selectivity <- ggpredict(model3, terms = "selectivity")
+
+effect_private <- ggpredict(model3, terms = "private")
+effect_forprofit <- ggpredict(model3, terms = "forprofit")
+effect_regionNortheast <- ggpredict(model3, terms = "region")
+
+effect_change_dif_hispa <- ggpredict(model3, terms = "change_dif_hispa")
+```
+
+
+```{r}
+ # Plot the effect for each variable
+plot(effect_enrollment_start)
+plot(effect_change_in_enrollment)
+plot(effect_change_dif_hispa)
+```
 
 
