@@ -401,78 +401,10 @@ ggpredict(model3, terms = "regionWest:change_dif_hispa")
 
 
 
-```{r}
-# Set up the plotting area with multiple panels
-par(mfrow = c(4, 4))
-
-# Plot for enrollment_start
-plot(x = data$enrollement_start, y = predict(model3), xlab = "Enrollment Start", ylab = "Change in Representation", main = "enrollement_start")
-
-# Plot for change_in_enrollment
-plot(x = data$change_in_enrollement, y = predict(model3), xlab = "Change in Enrollment", ylab = "Change in Representation", main = "change_in_enrollement")
-
-# Plot for selectivity2
-plot(x = data$selectivity2, y = predict(model3), xlab = "Selectivity (medium)", ylab = "Change in Representation", main = "selectivity2")
-
-# Plot for selectivity3
-plot(x = data$selectivity3, y = predict(model3), xlab = "Selectivity (high)", ylab = "Change in Representation", main = "selectivity3")
-
-# Plot for private1
-plot(x = data$private1, y = predict(model3), xlab = "Private Institution", ylab = "Change in Representation", main = "private1")
-
-# Plot for forprofit1
-plot(x = data$forprofit1, y = predict(model3), xlab = "For-profit Institution", ylab = "Change in Representation", main = "forprofit1")
-
-# Plot for regionNortheast
-plot(x = data$regionNortheast, y = predict(model3), xlab = "Region Northeast", ylab = "Change in Representation", main = "regionNortheast")
-
-# Plot for regionSouth
-plot(x = data$regionSouth, y = predict(model3), xlab = "Region South", ylab = "Change in Representation", main = "regionSouth")
-
-# Plot for regionWest
-plot(x = data$regionWest, y = predict(model3), xlab = "Region West", ylab = "Change in Representation", main = "regionWest")
-
-# Plot for change_dif_hispa
-plot(x = data$change_dif_hispa, y = predict(model3), xlab = "Change in Disparity - Hispanic", ylab = "Change in Representation", main = "change_dif_hispa")
-
-# Plot for regionNortheast:change_dif_hispa
-plot(x = data$regionNortheast * data$change_dif_hispa, y = predict(model3), xlab = "Region Northeast x Change in Disparity", ylab = "Change in Representation", main = "regionNortheast:change_dif_hispa")
-
-# Plot for regionSouth:change_dif_hispa
-plot(x = data$regionSouth * data$change_dif_hispa, y = predict(model3), xlab = "Region South x Change in Disparity", ylab = "Change in Representation", main = "regionSouth:change_dif_hispa")
-
-# Plot for regionWest:change_dif_hispa
-plot(x = data$regionWest * data$change_dif_hispa, y = predict(model3), xlab = "Region West x Change in Disparity", ylab = "Change in Representation", main = "regionWest:change_dif_hispa")
-
-```
-```{r}
- # Assuming you have the fitted model stored as 'model3'
-effect_plot <- ggpredict(model3, terms = "enrollement_start")
- # Plot the effect
- plot(effect_plot)
-```
 
 
 
 
-
-```{r}
-library(ggplot2)
-
-# Assuming you have the fitted model stored as 'model3'
-# Create effect plots for each variable
-effect_enrollment_start <- ggpredict(model3, terms = "enrollment_start")
-
-effect_change_in_enrollment <- ggpredict(model3, terms = "change_in_enrollment")
-
-effect_selectivity <- ggpredict(model3, terms = "selectivity")
-
-effect_private <- ggpredict(model3, terms = "private")
-effect_forprofit <- ggpredict(model3, terms = "forprofit")
-effect_regionNortheast <- ggpredict(model3, terms = "region")
-
-effect_change_dif_hispa <- ggpredict(model3, terms = "change_dif_hispa")
-```
 
 
 ```{r}
